@@ -1,7 +1,6 @@
 # Imports
 import requests
 import json
-import time
 from pathlib import Path
 
 # Establishing the files
@@ -12,13 +11,11 @@ config = config_path.open('r')
 config = json.loads(config.read())
 on_file = open("on.txt", "w+")
 off_file = open("off.txt", "w+")
-contents = usersFile.read()
+contents = usersFile.read().splitlines()
 
 # Creating session
 rblx_session = requests.Session()
 rblx_session.cookies[".ROBLOSECURITY"] = config["Cookie"]
-
-sleep_interval = 0.05
 
 def http_request(send_method, url, **args):
     request = rblx_session.request(send_method, url, **args)
@@ -57,15 +54,16 @@ def get_user_name(line):
     else:
         return line
 
-for line in contents.split():
+for line in contents:
     userId = get_user_id(line)
 
     if userId:
         # Seeing if they have messages open
-        can_message = http_request("get", url = f"https://privatemessages.roblox.com/v1/messages/{userId}/can-message")
+        #can_message = http_request("get", url = f"https://privatemessages.roblox.com/v1/messages/{userId}/can-message")
+        can_message = http_request("get", url = "https://www.roblox.com/users/profile/profileheader-json", params = {"userId": userId})
 
         if can_message.ok:
-            can_message = json.loads(can_message.content)['canMessage']
+            can_message = json.loads(can_message.content)['CanMessage']
 
             user_name = get_user_name(line)
 
@@ -73,8 +71,6 @@ for line in contents.split():
                 on_file.write(f"{user_name} \n")
             else:
                 off_file.write(f"{user_name} \n")
-
-    time.sleep(sleep_interval)
     
 # Closing the files after we are done with them
 usersFile.close()
