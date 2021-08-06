@@ -28,27 +28,49 @@ def http_request(send_method, url, **args):
 
     return request
 
+def get_user_id(line):
+    if line.isdigit():
+        return line
+    else:
+        search_query = http_request("get", "https://api.roblox.com/users/get-by-username?username=" + str(line))
+
+        if search_query.ok:
+            user = json.loads(search_query.content)
+
+            userId = user['Id']
+
+            return userId
+        else:
+            print("Search query error: " + str(search_query.status_code))
+
+def get_user_name(line):
+    if line.isdigit():
+        user_request = http_request("get", f"https://users.roblox.com/v1/users/{line}")
+
+        if user_request.ok:
+            data = json.loads(user_request.content)
+
+            return data['name']
+    else:
+        return line
+
 for line in contents.split():
-    search_query = http_request("get", "https://users.roblox.com/v1/users/search?keyword=" + line + "&limit=10")
+    userId = get_user_id(line)
 
-    if search_query.ok:
-        user = search_query.json()['data'][0]
-
-        userId = user['id']
-
+    if userId:
         # Seeing if they have messages open
         can_message = http_request("get", url = f"https://privatemessages.roblox.com/v1/messages/{userId}/can-message")
 
         if can_message.ok:
             can_message = json.loads(can_message.content)['canMessage']
 
-            if can_message:
-                on_file.write(f"{line} \n")
-            else:
-                off_file.write(f"{line} \n")
-    else:
-        print("Search query error: " + str(search_query.status_code))
+            user_name = get_user_name(line)
 
+            if can_message:
+                on_file.write(f"{user_name} \n")
+            else:
+                off_file.write(f"{user_name} \n")
+    
 # Closing the files after we are done with them
 usersFile.close()
 on_file.close()
