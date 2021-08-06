@@ -32,15 +32,16 @@ def get_user_id(line):
     if line.isdigit():
         return line
     else:
-        search_query = http_request("get", "https://api.roblox.com/users/get-by-username?username=" + str(line))
+        try:
+            search_query = http_request("get", "https://api.roblox.com/users/get-by-username?username=" + str(line))
 
-        if search_query.ok:
-            user = json.loads(search_query.content)
+            if search_query.ok:
+                user = json.loads(search_query.content)
 
-            userId = user['Id']
+                userId = user['Id']
 
-            return userId
-        else:
+                return userId
+        except:
             print("Search query error: " + str(search_query.status_code))
 
 def get_user_name(line):
