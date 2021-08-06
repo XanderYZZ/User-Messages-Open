@@ -1,6 +1,7 @@
 # Imports
 import requests
 import json
+import time
 from pathlib import Path
 
 # Establishing the files
@@ -16,6 +17,8 @@ contents = usersFile.read()
 # Creating session
 rblx_session = requests.Session()
 rblx_session.cookies[".ROBLOSECURITY"] = config["Cookie"]
+
+sleep_interval = 0.05
 
 def http_request(send_method, url, **args):
     request = rblx_session.request(send_method, url, **args)
@@ -70,6 +73,8 @@ for line in contents.split():
                 on_file.write(f"{user_name} \n")
             else:
                 off_file.write(f"{user_name} \n")
+
+    time.sleep(sleep_interval)
     
 # Closing the files after we are done with them
 usersFile.close()
